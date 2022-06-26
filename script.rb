@@ -1,45 +1,69 @@
 require 'mini_racer'
-# require 'v8'
-# require 'commonjs'
 
 context = MiniRacer::Context.new
-# script = File.read './dist/index.js'
-# context.eval script
-# puts context.eval 'this'
 context.eval 'let global = globalThis'
 context.eval File.read './system.min.js'
 context.eval File.read './named-register.js'
-# context.eval File.read './dist/index.js'
-context.eval <<~JS
-  System.register('tslib', #{})
-JS
 context.eval File.read './dist.js'
-context.attach 'callMe', proc { |*with| puts "called#{with.size > 0 ? " with: #{with}" : ''}" }
-context.eval <<~JS
-  (async function () {
-//     const scheme = System.import('/index.js').then(m => {
-//       throw new Error
-//     })
-//     return Object.keys(scheme).length
-    callMe('before')
-    try {
-      let index = await System.import('index')
-      callMe('success')
-    } catch (e) {
-      callMe('failure', e.message)
-    } finally {
-      callMe('after')
+
+def load_index context, &with_index
+  context.attach 'loadedIndex', -> (*a, **kw) { with_index.call *a, **kw }
+
+  context.eval "
+    (async function () {
+      globalThis.index = await System.import('index')
+      // loadedIndex(index)
+    })()
+
+    function getIndex() { return globalThis.index }
+  "
+
+  sleep 0.1
+
+  puts 'after load'
+  index = context.call 'getIndex'
+  with_index.call index
+end
+
+def make_schemes context, &with_schemes
+  puts 'making...'
+  context.attach 'madeSchemes', -> (*a, **kw) { with_schemes.call *a, **kw }
+  puts 'attached...'
+#   context.eval 'madeSchemes("hello")'
+  context.eval "
+    globalThis.schemes = tryMakeSchemes()
+    madeSchemes(schemes)
+
+    function tryMakeSchemes() {
+      try {
+        return makeSchemes()
+      } catch (e) {
+        return e
+      }
     }
-  })()
-JS
 
-sleep 1
+    function makeSchemes() {
+      let palette = new index.CorePalette(6770852)
+      return {
+        light_scheme: index.Scheme.lightFromCorePalette(palette),
+        dark_scheme: index.Scheme.darkFromCorePalette(palette),
+      }
+    }
+  "
+  puts 'after eval'
+end
 
-puts context.eval <<~JS
-//   Object.entries(index)
-  typeof index
-JS
-# env = CommonJS::Environment.new context, path: '/home/roei/repos/dart-boilerplate/material-color-utilities/typescript/dist'
-# env.require('index.js')
+load_index context do |index|
+  puts "called with index", index
+  puts context
+  sleep 1
+
+  puts 'making schemes'
+  make_schemes context do |schemes|
+    puts "  schemes:", schemes
+  end
+
+  puts 'after'
+end
 
 

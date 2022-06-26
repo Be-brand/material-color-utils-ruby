@@ -1,12 +1,3 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 /**
  * @license
  * Copyright 2021 Google LLC
@@ -1905,654 +1896,10 @@ System.register("palettes/core_palette", ["hct/hct", "palettes/tonal_palette"], 
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-System.register("quantize/quantizer_wsmeans", [], function (exports_10, context_10) {
-    "use strict";
-    var QuantizerWsmeans;
-    var __moduleName = context_10 && context_10.id;
-    return {
-        setters: [],
-        execute: function () {/**
-             * @license
-             * Copyright 2021 Google LLC
-             *
-             * Licensed under the Apache License, Version 2.0 (the "License");
-             * you may not use this file except in compliance with the License.
-             * You may obtain a copy of the License at
-             *
-             *      http://www.apache.org/licenses/LICENSE-2.0
-             *
-             * Unless required by applicable law or agreed to in writing, software
-             * distributed under the License is distributed on an "AS IS" BASIS,
-             * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-             * See the License for the specific language governing permissions and
-             * limitations under the License.
-             */
-            // import {LabPointProvider} from './lab_point_provider';
-            // const MAX_ITERATIONS = 10;
-            // const MIN_MOVEMENT_DISTANCE = 3.0;
-            /**
-             * An image quantizer that improves on the speed of a standard K-Means algorithm
-             * by implementing several optimizations, including deduping identical pixels
-             * and a triangle inequality rule that reduces the number of comparisons needed
-             * to identify which cluster a point should be moved to.
-             *
-             * Wsmeans stands for Weighted Square Means.
-             *
-             * This algorithm was designed by M. Emre Celebi, and was found in their 2011
-             * paper, Improving the Performance of K-Means for Color Quantization.
-             * https://arxiv.org/abs/1101.0395
-             */
-            // libmonet is designed to have a consistent API across platforms
-            // and modular components that can be moved around easily. Using a class as a
-            // namespace facilitates this.
-            //
-            // tslint:disable-next-line:class-as-namespace
-            QuantizerWsmeans = class QuantizerWsmeans {
-                /**
-                 * @param inputPixels Colors in ARGB format.
-                 * @param startingClusters Defines the initial state of the quantizer. Passing
-                 *     an empty array is fine, the implementation will create its own initial
-                 *     state that leads to reproducible results for the same inputs.
-                 *     Passing an array that is the result of Wu quantization leads to higher
-                 *     quality results.
-                 * @param maxColors The number of colors to divide the image into. A lower
-                 *     number of colors may be returned.
-                 * @return Colors in ARGB format.
-                 */
-                static quantize(inputPixels, startingClusters, maxColors) {
-                }
-            };
-            exports_10("QuantizerWsmeans", QuantizerWsmeans);
-            /**
-             *  A wrapper for maintaining a table of distances between K-Means clusters.
-             */
-            // class DistanceAndIndex {
-            //   distance: number = -1;
-            //   index: number = -1;
-            // }
-        }
-    };
-});
-/**
- * @license
- * Copyright 2021 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-System.register("quantize/quantizer_map", ["utils/color_utils"], function (exports_11, context_11) {
-    "use strict";
-    var utils, QuantizerMap;
-    var __moduleName = context_11 && context_11.id;
-    return {
-        setters: [
-            function (utils_4) {
-                utils = utils_4;
-            }
-        ],
-        execute: function () {/**
-             * @license
-             * Copyright 2021 Google LLC
-             *
-             * Licensed under the Apache License, Version 2.0 (the "License");
-             * you may not use this file except in compliance with the License.
-             * You may obtain a copy of the License at
-             *
-             *      http://www.apache.org/licenses/LICENSE-2.0
-             *
-             * Unless required by applicable law or agreed to in writing, software
-             * distributed under the License is distributed on an "AS IS" BASIS,
-             * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-             * See the License for the specific language governing permissions and
-             * limitations under the License.
-             */
-            /**
-             * Quantizes an image into a map, with keys of ARGB colors, and values of the
-             * number of times that color appears in the image.
-             */
-            // libmonet is designed to have a consistent API across platforms
-            // and modular components that can be moved around easily. Using a class as a
-            // namespace facilitates this.
-            //
-            // tslint:disable-next-line:class-as-namespace
-            QuantizerMap = class QuantizerMap {
-                /**
-                 * @param pixels Colors in ARGB format.
-                 * @return A Map with keys of ARGB colors, and values of the number of times
-                 *     the color appears in the image.
-                 */
-                static quantize(pixels) {
-                    var _a;
-                    const countByColor = new Map();
-                    for (let i = 0; i < pixels.length; i++) {
-                        const pixel = pixels[i];
-                        const alpha = utils.alphaFromArgb(pixel);
-                        if (alpha < 255) {
-                            continue;
-                        }
-                        countByColor.set(pixel, ((_a = countByColor.get(pixel)) !== null && _a !== void 0 ? _a : 0) + 1);
-                    }
-                    return countByColor;
-                }
-            };
-            exports_11("QuantizerMap", QuantizerMap);
-        }
-    };
-});
-/**
- * @license
- * Copyright 2021 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-System.register("quantize/quantizer_wu", ["utils/color_utils", "quantize/quantizer_map"], function (exports_12, context_12) {
-    "use strict";
-    var utils, quantizer_map_1, INDEX_BITS, SIDE_LENGTH, TOTAL_SIZE, directions, QuantizerWu, Box, CreateBoxesResult, MaximizeResult;
-    var __moduleName = context_12 && context_12.id;
-    return {
-        setters: [
-            function (utils_5) {
-                utils = utils_5;
-            },
-            function (quantizer_map_1_1) {
-                quantizer_map_1 = quantizer_map_1_1;
-            }
-        ],
-        execute: function () {/**
-             * @license
-             * Copyright 2021 Google LLC
-             *
-             * Licensed under the Apache License, Version 2.0 (the "License");
-             * you may not use this file except in compliance with the License.
-             * You may obtain a copy of the License at
-             *
-             *      http://www.apache.org/licenses/LICENSE-2.0
-             *
-             * Unless required by applicable law or agreed to in writing, software
-             * distributed under the License is distributed on an "AS IS" BASIS,
-             * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-             * See the License for the specific language governing permissions and
-             * limitations under the License.
-             */
-            INDEX_BITS = 5;
-            SIDE_LENGTH = 33; // ((1 << INDEX_INDEX_BITS) + 1)
-            TOTAL_SIZE = 35937; // SIDE_LENGTH * SIDE_LENGTH * SIDE_LENGTH
-            directions = {
-                RED: 'red',
-                GREEN: 'green',
-                BLUE: 'blue',
-            };
-            /**
-             * An image quantizer that divides the image's pixels into clusters by
-             * recursively cutting an RGB cube, based on the weight of pixels in each area
-             * of the cube.
-             *
-             * The algorithm was described by Xiaolin Wu in Graphic Gems II, published in
-             * 1991.
-             */
-            QuantizerWu = class QuantizerWu {
-                constructor(weights = [], momentsR = [], momentsG = [], momentsB = [], moments = [], cubes = []) {
-                    this.weights = weights;
-                    this.momentsR = momentsR;
-                    this.momentsG = momentsG;
-                    this.momentsB = momentsB;
-                    this.moments = moments;
-                    this.cubes = cubes;
-                }
-                /**
-                 * @param pixels Colors in ARGB format.
-                 * @param maxColors The number of colors to divide the image into. A lower
-                 *     number of colors may be returned.
-                 * @return Colors in ARGB format.
-                 */
-                quantize(pixels, maxColors) {
-                    this.constructHistogram(pixels);
-                    this.computeMoments();
-                    const createBoxesResult = this.createBoxes(maxColors);
-                    const results = this.createResult(createBoxesResult.resultCount);
-                    return results;
-                }
-                constructHistogram(pixels) {
-                    var _a;
-                    this.weights = Array.from({ length: TOTAL_SIZE }).fill(0);
-                    this.momentsR = Array.from({ length: TOTAL_SIZE }).fill(0);
-                    this.momentsG = Array.from({ length: TOTAL_SIZE }).fill(0);
-                    this.momentsB = Array.from({ length: TOTAL_SIZE }).fill(0);
-                    this.moments = Array.from({ length: TOTAL_SIZE }).fill(0);
-                    const countByColor = quantizer_map_1.QuantizerMap.quantize(pixels);
-                    for (const [pixel, count] of countByColor.entries()) {
-                        const red = utils.redFromArgb(pixel);
-                        const green = utils.greenFromArgb(pixel);
-                        const blue = utils.blueFromArgb(pixel);
-                        const bitsToRemove = 8 - INDEX_BITS;
-                        const iR = (red >> bitsToRemove) + 1;
-                        const iG = (green >> bitsToRemove) + 1;
-                        const iB = (blue >> bitsToRemove) + 1;
-                        const index = this.getIndex(iR, iG, iB);
-                        this.weights[index] = ((_a = this.weights[index]) !== null && _a !== void 0 ? _a : 0) + count;
-                        this.momentsR[index] += count * red;
-                        this.momentsG[index] += count * green;
-                        this.momentsB[index] += count * blue;
-                        this.moments[index] += count * (red * red + green * green + blue * blue);
-                    }
-                }
-                computeMoments() {
-                    for (let r = 1; r < SIDE_LENGTH; r++) {
-                        const area = Array.from({ length: SIDE_LENGTH }).fill(0);
-                        const areaR = Array.from({ length: SIDE_LENGTH }).fill(0);
-                        const areaG = Array.from({ length: SIDE_LENGTH }).fill(0);
-                        const areaB = Array.from({ length: SIDE_LENGTH }).fill(0);
-                        const area2 = Array.from({ length: SIDE_LENGTH }).fill(0.0);
-                        for (let g = 1; g < SIDE_LENGTH; g++) {
-                            let line = 0;
-                            let lineR = 0;
-                            let lineG = 0;
-                            let lineB = 0;
-                            let line2 = 0.0;
-                            for (let b = 1; b < SIDE_LENGTH; b++) {
-                                const index = this.getIndex(r, g, b);
-                                line += this.weights[index];
-                                lineR += this.momentsR[index];
-                                lineG += this.momentsG[index];
-                                lineB += this.momentsB[index];
-                                line2 += this.moments[index];
-                                area[b] += line;
-                                areaR[b] += lineR;
-                                areaG[b] += lineG;
-                                areaB[b] += lineB;
-                                area2[b] += line2;
-                                const previousIndex = this.getIndex(r - 1, g, b);
-                                this.weights[index] = this.weights[previousIndex] + area[b];
-                                this.momentsR[index] = this.momentsR[previousIndex] + areaR[b];
-                                this.momentsG[index] = this.momentsG[previousIndex] + areaG[b];
-                                this.momentsB[index] = this.momentsB[previousIndex] + areaB[b];
-                                this.moments[index] = this.moments[previousIndex] + area2[b];
-                            }
-                        }
-                    }
-                }
-                createBoxes(maxColors) {
-                    this.cubes =
-                        Array.from({ length: maxColors }).fill(0).map(() => new Box());
-                    const volumeVariance = Array.from({ length: maxColors }).fill(0.0);
-                    this.cubes[0].r0 = 0;
-                    this.cubes[0].g0 = 0;
-                    this.cubes[0].b0 = 0;
-                    this.cubes[0].r1 = SIDE_LENGTH - 1;
-                    this.cubes[0].g1 = SIDE_LENGTH - 1;
-                    this.cubes[0].b1 = SIDE_LENGTH - 1;
-                    let generatedColorCount = maxColors;
-                    let next = 0;
-                    for (let i = 1; i < maxColors; i++) {
-                        if (this.cut(this.cubes[next], this.cubes[i])) {
-                            volumeVariance[next] =
-                                this.cubes[next].vol > 1 ? this.variance(this.cubes[next]) : 0.0;
-                            volumeVariance[i] =
-                                this.cubes[i].vol > 1 ? this.variance(this.cubes[i]) : 0.0;
-                        }
-                        else {
-                            volumeVariance[next] = 0.0;
-                            i--;
-                        }
-                        next = 0;
-                        let temp = volumeVariance[0];
-                        for (let j = 1; j <= i; j++) {
-                            if (volumeVariance[j] > temp) {
-                                temp = volumeVariance[j];
-                                next = j;
-                            }
-                        }
-                        if (temp <= 0.0) {
-                            generatedColorCount = i + 1;
-                            break;
-                        }
-                    }
-                    return new CreateBoxesResult(maxColors, generatedColorCount);
-                }
-                createResult(colorCount) {
-                    const colors = [];
-                    for (let i = 0; i < colorCount; ++i) {
-                        const cube = this.cubes[i];
-                        const weight = this.volume(cube, this.weights);
-                        if (weight > 0) {
-                            const r = Math.round(this.volume(cube, this.momentsR) / weight);
-                            const g = Math.round(this.volume(cube, this.momentsG) / weight);
-                            const b = Math.round(this.volume(cube, this.momentsB) / weight);
-                            const color = (255 << 24) | ((r & 0x0ff) << 16) | ((g & 0x0ff) << 8) |
-                                (b & 0x0ff);
-                            colors.push(color);
-                        }
-                    }
-                    return colors;
-                }
-                variance(cube) {
-                    const dr = this.volume(cube, this.momentsR);
-                    const dg = this.volume(cube, this.momentsG);
-                    const db = this.volume(cube, this.momentsB);
-                    const xx = this.moments[this.getIndex(cube.r1, cube.g1, cube.b1)] -
-                        this.moments[this.getIndex(cube.r1, cube.g1, cube.b0)] -
-                        this.moments[this.getIndex(cube.r1, cube.g0, cube.b1)] +
-                        this.moments[this.getIndex(cube.r1, cube.g0, cube.b0)] -
-                        this.moments[this.getIndex(cube.r0, cube.g1, cube.b1)] +
-                        this.moments[this.getIndex(cube.r0, cube.g1, cube.b0)] +
-                        this.moments[this.getIndex(cube.r0, cube.g0, cube.b1)] -
-                        this.moments[this.getIndex(cube.r0, cube.g0, cube.b0)];
-                    const hypotenuse = dr * dr + dg * dg + db * db;
-                    const volume = this.volume(cube, this.weights);
-                    return xx - hypotenuse / volume;
-                }
-                cut(one, two) {
-                    const wholeR = this.volume(one, this.momentsR);
-                    const wholeG = this.volume(one, this.momentsG);
-                    const wholeB = this.volume(one, this.momentsB);
-                    const wholeW = this.volume(one, this.weights);
-                    const maxRResult = this.maximize(one, directions.RED, one.r0 + 1, one.r1, wholeR, wholeG, wholeB, wholeW);
-                    const maxGResult = this.maximize(one, directions.GREEN, one.g0 + 1, one.g1, wholeR, wholeG, wholeB, wholeW);
-                    const maxBResult = this.maximize(one, directions.BLUE, one.b0 + 1, one.b1, wholeR, wholeG, wholeB, wholeW);
-                    let direction;
-                    const maxR = maxRResult.maximum;
-                    const maxG = maxGResult.maximum;
-                    const maxB = maxBResult.maximum;
-                    if (maxR >= maxG && maxR >= maxB) {
-                        if (maxRResult.cutLocation < 0) {
-                            return false;
-                        }
-                        direction = directions.RED;
-                    }
-                    else if (maxG >= maxR && maxG >= maxB) {
-                        direction = directions.GREEN;
-                    }
-                    else {
-                        direction = directions.BLUE;
-                    }
-                    two.r1 = one.r1;
-                    two.g1 = one.g1;
-                    two.b1 = one.b1;
-                    switch (direction) {
-                        case directions.RED:
-                            one.r1 = maxRResult.cutLocation;
-                            two.r0 = one.r1;
-                            two.g0 = one.g0;
-                            two.b0 = one.b0;
-                            break;
-                        case directions.GREEN:
-                            one.g1 = maxGResult.cutLocation;
-                            two.r0 = one.r0;
-                            two.g0 = one.g1;
-                            two.b0 = one.b0;
-                            break;
-                        case directions.BLUE:
-                            one.b1 = maxBResult.cutLocation;
-                            two.r0 = one.r0;
-                            two.g0 = one.g0;
-                            two.b0 = one.b1;
-                            break;
-                        default:
-                            throw new Error('unexpected direction ' + direction);
-                    }
-                    one.vol = (one.r1 - one.r0) * (one.g1 - one.g0) * (one.b1 - one.b0);
-                    two.vol = (two.r1 - two.r0) * (two.g1 - two.g0) * (two.b1 - two.b0);
-                    return true;
-                }
-                maximize(cube, direction, first, last, wholeR, wholeG, wholeB, wholeW) {
-                    const bottomR = this.bottom(cube, direction, this.momentsR);
-                    const bottomG = this.bottom(cube, direction, this.momentsG);
-                    const bottomB = this.bottom(cube, direction, this.momentsB);
-                    const bottomW = this.bottom(cube, direction, this.weights);
-                    let max = 0.0;
-                    let cut = -1;
-                    let halfR = 0;
-                    let halfG = 0;
-                    let halfB = 0;
-                    let halfW = 0;
-                    for (let i = first; i < last; i++) {
-                        halfR = bottomR + this.top(cube, direction, i, this.momentsR);
-                        halfG = bottomG + this.top(cube, direction, i, this.momentsG);
-                        halfB = bottomB + this.top(cube, direction, i, this.momentsB);
-                        halfW = bottomW + this.top(cube, direction, i, this.weights);
-                        if (halfW === 0) {
-                            continue;
-                        }
-                        let tempNumerator = (halfR * halfR + halfG * halfG + halfB * halfB) * 1.0;
-                        let tempDenominator = halfW * 1.0;
-                        let temp = tempNumerator / tempDenominator;
-                        halfR = wholeR - halfR;
-                        halfG = wholeG - halfG;
-                        halfB = wholeB - halfB;
-                        halfW = wholeW - halfW;
-                        if (halfW === 0) {
-                            continue;
-                        }
-                        tempNumerator = (halfR * halfR + halfG * halfG + halfB * halfB) * 1.0;
-                        tempDenominator = halfW * 1.0;
-                        temp += tempNumerator / tempDenominator;
-                        if (temp > max) {
-                            max = temp;
-                            cut = i;
-                        }
-                    }
-                    return new MaximizeResult(cut, max);
-                }
-                volume(cube, moment) {
-                    return (moment[this.getIndex(cube.r1, cube.g1, cube.b1)] -
-                        moment[this.getIndex(cube.r1, cube.g1, cube.b0)] -
-                        moment[this.getIndex(cube.r1, cube.g0, cube.b1)] +
-                        moment[this.getIndex(cube.r1, cube.g0, cube.b0)] -
-                        moment[this.getIndex(cube.r0, cube.g1, cube.b1)] +
-                        moment[this.getIndex(cube.r0, cube.g1, cube.b0)] +
-                        moment[this.getIndex(cube.r0, cube.g0, cube.b1)] -
-                        moment[this.getIndex(cube.r0, cube.g0, cube.b0)]);
-                }
-                bottom(cube, direction, moment) {
-                    switch (direction) {
-                        case directions.RED:
-                            return (-moment[this.getIndex(cube.r0, cube.g1, cube.b1)] +
-                                moment[this.getIndex(cube.r0, cube.g1, cube.b0)] +
-                                moment[this.getIndex(cube.r0, cube.g0, cube.b1)] -
-                                moment[this.getIndex(cube.r0, cube.g0, cube.b0)]);
-                        case directions.GREEN:
-                            return (-moment[this.getIndex(cube.r1, cube.g0, cube.b1)] +
-                                moment[this.getIndex(cube.r1, cube.g0, cube.b0)] +
-                                moment[this.getIndex(cube.r0, cube.g0, cube.b1)] -
-                                moment[this.getIndex(cube.r0, cube.g0, cube.b0)]);
-                        case directions.BLUE:
-                            return (-moment[this.getIndex(cube.r1, cube.g1, cube.b0)] +
-                                moment[this.getIndex(cube.r1, cube.g0, cube.b0)] +
-                                moment[this.getIndex(cube.r0, cube.g1, cube.b0)] -
-                                moment[this.getIndex(cube.r0, cube.g0, cube.b0)]);
-                        default:
-                            throw new Error('unexpected direction $direction');
-                    }
-                }
-                top(cube, direction, position, moment) {
-                    switch (direction) {
-                        case directions.RED:
-                            return (moment[this.getIndex(position, cube.g1, cube.b1)] -
-                                moment[this.getIndex(position, cube.g1, cube.b0)] -
-                                moment[this.getIndex(position, cube.g0, cube.b1)] +
-                                moment[this.getIndex(position, cube.g0, cube.b0)]);
-                        case directions.GREEN:
-                            return (moment[this.getIndex(cube.r1, position, cube.b1)] -
-                                moment[this.getIndex(cube.r1, position, cube.b0)] -
-                                moment[this.getIndex(cube.r0, position, cube.b1)] +
-                                moment[this.getIndex(cube.r0, position, cube.b0)]);
-                        case directions.BLUE:
-                            return (moment[this.getIndex(cube.r1, cube.g1, position)] -
-                                moment[this.getIndex(cube.r1, cube.g0, position)] -
-                                moment[this.getIndex(cube.r0, cube.g1, position)] +
-                                moment[this.getIndex(cube.r0, cube.g0, position)]);
-                        default:
-                            throw new Error('unexpected direction $direction');
-                    }
-                }
-                getIndex(r, g, b) {
-                    return (r << (INDEX_BITS * 2)) + (r << (INDEX_BITS + 1)) + r +
-                        (g << INDEX_BITS) + g + b;
-                }
-            };
-            exports_12("QuantizerWu", QuantizerWu);
-            /**
-             * Keeps track of the state of each box created as the Wu  quantization
-             * algorithm progresses through dividing the image's pixels as plotted in RGB.
-             */
-            Box = class Box {
-                constructor(r0 = 0, r1 = 0, g0 = 0, g1 = 0, b0 = 0, b1 = 0, vol = 0) {
-                    this.r0 = r0;
-                    this.r1 = r1;
-                    this.g0 = g0;
-                    this.g1 = g1;
-                    this.b0 = b0;
-                    this.b1 = b1;
-                    this.vol = vol;
-                }
-            };
-            /**
-             * Represents final result of Wu algorithm.
-             */
-            CreateBoxesResult = class CreateBoxesResult {
-                /**
-                 * @param requestedCount how many colors the caller asked to be returned from
-                 *     quantization.
-                 * @param resultCount the actual number of colors achieved from quantization.
-                 *     May be lower than the requested count.
-                 */
-                constructor(requestedCount, resultCount) {
-                    this.requestedCount = requestedCount;
-                    this.resultCount = resultCount;
-                }
-            };
-            /**
-             * Represents the result of calculating where to cut an existing box in such
-             * a way to maximize variance between the two new boxes created by a cut.
-             */
-            MaximizeResult = class MaximizeResult {
-                constructor(cutLocation, maximum) {
-                    this.cutLocation = cutLocation;
-                    this.maximum = maximum;
-                }
-            };
-        }
-    };
-});
-/**
- * @license
- * Copyright 2021 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-System.register("quantize/quantizer_celebi", ["quantize/quantizer_wsmeans", "quantize/quantizer_wu"], function (exports_13, context_13) {
-    "use strict";
-    var quantizer_wsmeans_1, quantizer_wu_1, QuantizerCelebi;
-    var __moduleName = context_13 && context_13.id;
-    return {
-        setters: [
-            function (quantizer_wsmeans_1_1) {
-                quantizer_wsmeans_1 = quantizer_wsmeans_1_1;
-            },
-            function (quantizer_wu_1_1) {
-                quantizer_wu_1 = quantizer_wu_1_1;
-            }
-        ],
-        execute: function () {/**
-             * @license
-             * Copyright 2021 Google LLC
-             *
-             * Licensed under the Apache License, Version 2.0 (the "License");
-             * you may not use this file except in compliance with the License.
-             * You may obtain a copy of the License at
-             *
-             *      http://www.apache.org/licenses/LICENSE-2.0
-             *
-             * Unless required by applicable law or agreed to in writing, software
-             * distributed under the License is distributed on an "AS IS" BASIS,
-             * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-             * See the License for the specific language governing permissions and
-             * limitations under the License.
-             */
-            /**
-             * An image quantizer that improves on the quality of a standard K-Means
-             * algorithm by setting the K-Means initial state to the output of a Wu
-             * quantizer, instead of random centroids. Improves on speed by several
-             * optimizations, as implemented in Wsmeans, or Weighted Square Means, K-Means
-             * with those optimizations.
-             *
-             * This algorithm was designed by M. Emre Celebi, and was found in their 2011
-             * paper, Improving the Performance of K-Means for Color Quantization.
-             * https://arxiv.org/abs/1101.0395
-             */
-            // libmonet is designed to have a consistent API across platforms
-            // and modular components that can be moved around easily. Using a class as a
-            // namespace facilitates this.
-            //
-            // tslint:disable-next-line:class-as-namespace
-            QuantizerCelebi = class QuantizerCelebi {
-                /**
-                 * @param pixels Colors in ARGB format.
-                 * @param maxColors The number of colors to divide the image into. A lower
-                 *     number of colors may be returned.
-                 * @return Map with keys of colors in ARGB format, and values of number of
-                 *     pixels in the original image that correspond to the color in the
-                 *     quantized image.
-                 */
-                static quantize(pixels, maxColors) {
-                    const wu = new quantizer_wu_1.QuantizerWu();
-                    const wuResult = wu.quantize(pixels, maxColors);
-                    return quantizer_wsmeans_1.QuantizerWsmeans.quantize(pixels, wuResult, maxColors);
-                }
-            };
-            exports_13("QuantizerCelebi", QuantizerCelebi);
-        }
-    };
-});
-/**
- * @license
- * Copyright 2021 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-System.register("scheme/scheme", ["palettes/core_palette"], function (exports_14, context_14) {
+System.register("scheme/scheme", ["palettes/core_palette"], function (exports_10, context_10) {
     "use strict";
     var core_palette_1, Scheme;
-    var __moduleName = context_14 && context_14.id;
+    var __moduleName = context_10 && context_10.id;
     return {
         setters: [
             function (core_palette_1_1) {
@@ -2763,7 +2110,7 @@ System.register("scheme/scheme", ["palettes/core_palette"], function (exports_14
                     return Object.assign({}, this.props);
                 }
             };
-            exports_14("Scheme", Scheme);
+            exports_10("Scheme", Scheme);
         }
     };
 });
@@ -2783,10 +2130,10 @@ System.register("scheme/scheme", ["palettes/core_palette"], function (exports_14
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-System.register("scheme/scheme_android", ["palettes/core_palette"], function (exports_15, context_15) {
+System.register("scheme/scheme_android", ["palettes/core_palette"], function (exports_11, context_11) {
     "use strict";
     var core_palette_2, SchemeAndroid;
-    var __moduleName = context_15 && context_15.id;
+    var __moduleName = context_11 && context_11.id;
     return {
         setters: [
             function (core_palette_2_1) {
@@ -2991,7 +2338,7 @@ System.register("scheme/scheme_android", ["palettes/core_palette"], function (ex
                     return Object.assign({}, this.props);
                 }
             };
-            exports_15("SchemeAndroid", SchemeAndroid);
+            exports_11("SchemeAndroid", SchemeAndroid);
         }
     };
 });
@@ -3011,17 +2358,17 @@ System.register("scheme/scheme_android", ["palettes/core_palette"], function (ex
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-System.register("score/score", ["hct/cam16", "utils/color_utils", "utils/math_utils"], function (exports_16, context_16) {
+System.register("score/score", ["hct/cam16", "utils/color_utils", "utils/math_utils"], function (exports_12, context_12) {
     "use strict";
     var cam16_4, utils, math, Score;
-    var __moduleName = context_16 && context_16.id;
+    var __moduleName = context_12 && context_12.id;
     return {
         setters: [
             function (cam16_4_1) {
                 cam16_4 = cam16_4_1;
             },
-            function (utils_6) {
-                utils = utils_6;
+            function (utils_4) {
+                utils = utils_4;
             },
             function (math_3) {
                 math = math_3;
@@ -3161,7 +2508,7 @@ System.register("score/score", ["hct/cam16", "utils/color_utils", "utils/math_ut
                     return Array.from(colorsToCam.keys());
                 }
             };
-            exports_16("Score", Score);
+            exports_12("Score", Score);
             Score.TARGET_CHROMA = 48.0;
             Score.WEIGHT_PROPORTION = 0.7;
             Score.WEIGHT_CHROMA_ABOVE = 0.3;
@@ -3188,10 +2535,10 @@ System.register("score/score", ["hct/cam16", "utils/color_utils", "utils/math_ut
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-System.register("utils/string_utils", ["utils/color_utils"], function (exports_17, context_17) {
+System.register("utils/string_utils", ["utils/color_utils"], function (exports_13, context_13) {
     "use strict";
     var colorUtils, hexFromArgb, argbFromHex;
-    var __moduleName = context_17 && context_17.id;
+    var __moduleName = context_13 && context_13.id;
     function parseIntHex(value) {
         // tslint:disable-next-line:ban
         return parseInt(value, 16);
@@ -3225,7 +2572,7 @@ System.register("utils/string_utils", ["utils/color_utils"], function (exports_1
              * @param argb ARGB representation of a color.
              * @return Hex string representing color, ex. #ff0000 for red.
              */
-            exports_17("hexFromArgb", hexFromArgb = (argb) => {
+            exports_13("hexFromArgb", hexFromArgb = (argb) => {
                 const r = colorUtils.redFromArgb(argb);
                 const g = colorUtils.greenFromArgb(argb);
                 const b = colorUtils.blueFromArgb(argb);
@@ -3244,7 +2591,7 @@ System.register("utils/string_utils", ["utils/color_utils"], function (exports_1
              *     hex characters.
              * @return ARGB representation of color.
              */
-            exports_17("argbFromHex", argbFromHex = (hex) => {
+            exports_13("argbFromHex", argbFromHex = (hex) => {
                 hex = hex.replace('#', '');
                 const isThree = hex.length === 3;
                 const isSix = hex.length === 6;
@@ -3292,104 +2639,10 @@ System.register("utils/string_utils", ["utils/color_utils"], function (exports_1
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-System.register("utils/image_utils", ["quantize/quantizer_celebi", "score/score", "utils/color_utils"], function (exports_18, context_18) {
+System.register("utils/theme_utils", ["blend/blend", "palettes/core_palette", "scheme/scheme", "utils/string_utils"], function (exports_14, context_14) {
     "use strict";
-    var quantizer_celebi_1, score_1, color_utils_1;
-    var __moduleName = context_18 && context_18.id;
-    /**
-     * Get the source color from an image.
-     *
-     * @param image The image element
-     * @return Source color - the color most suitable for creating a UI theme
-     */
-    function sourceColorFromImage(image) {
-        return __awaiter(this, void 0, void 0, function* () {
-            // Convert Image data to Pixel Array
-            const imageBytes = yield new Promise((resolve, reject) => {
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                if (!context) {
-                    return reject(new Error('Could not get canvas context'));
-                }
-                image.onload = () => {
-                    canvas.width = image.width;
-                    canvas.height = image.height;
-                    context.drawImage(image, 0, 0);
-                    resolve(context.getImageData(0, 0, image.width, image.height).data);
-                };
-            });
-            // Convert Image data to Pixel Array
-            const pixels = [];
-            for (let i = 0; i < imageBytes.length; i += 4) {
-                const r = imageBytes[i];
-                const g = imageBytes[i + 1];
-                const b = imageBytes[i + 2];
-                const a = imageBytes[i + 3];
-                if (a < 255) {
-                    continue;
-                }
-                const argb = color_utils_1.argbFromRgb(r, g, b);
-                pixels.push(argb);
-            }
-            // Convert Pixels to Material Colors
-            const result = quantizer_celebi_1.QuantizerCelebi.quantize(pixels, 128);
-            const ranked = score_1.Score.score(result);
-            const top = ranked[0];
-            return top;
-        });
-    }
-    exports_18("sourceColorFromImage", sourceColorFromImage);
-    return {
-        setters: [
-            function (quantizer_celebi_1_1) {
-                quantizer_celebi_1 = quantizer_celebi_1_1;
-            },
-            function (score_1_1) {
-                score_1 = score_1_1;
-            },
-            function (color_utils_1_1) {
-                color_utils_1 = color_utils_1_1;
-            }
-        ],
-        execute: function () {/**
-             * @license
-             * Copyright 2021 Google LLC
-             *
-             * Licensed under the Apache License, Version 2.0 (the "License");
-             * you may not use this file except in compliance with the License.
-             * You may obtain a copy of the License at
-             *
-             *      http://www.apache.org/licenses/LICENSE-2.0
-             *
-             * Unless required by applicable law or agreed to in writing, software
-             * distributed under the License is distributed on an "AS IS" BASIS,
-             * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-             * See the License for the specific language governing permissions and
-             * limitations under the License.
-             */
-        }
-    };
-});
-/**
- * @license
- * Copyright 2021 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-System.register("utils/theme_utils", ["blend/blend", "palettes/core_palette", "scheme/scheme", "utils/image_utils", "utils/string_utils"], function (exports_19, context_19) {
-    "use strict";
-    var blend_1, core_palette_3, scheme_1, image_utils_1, string_utils_1;
-    var __moduleName = context_19 && context_19.id;
+    var blend_1, core_palette_3, scheme_1, string_utils_1;
+    var __moduleName = context_14 && context_14.id;
     /**
      * Generate a theme from a source color
      *
@@ -3416,21 +2669,7 @@ System.register("utils/theme_utils", ["blend/blend", "palettes/core_palette", "s
             customColors: customColors.map((c) => customColor(source, c)),
         };
     }
-    exports_19("themeFromSourceColor", themeFromSourceColor);
-    /**
-     * Generate a theme from an image source
-     *
-     * @param image Image element
-     * @param customColors Array of custom colors
-     * @return Theme object
-     */
-    function themeFromImage(image, customColors = []) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const source = yield image_utils_1.sourceColorFromImage(image);
-            return themeFromSourceColor(source, customColors);
-        });
-    }
-    exports_19("themeFromImage", themeFromImage);
+    exports_14("themeFromSourceColor", themeFromSourceColor);
     /**
      * Generate custom color group from source and target color
      *
@@ -3466,7 +2705,7 @@ System.register("utils/theme_utils", ["blend/blend", "palettes/core_palette", "s
             },
         };
     }
-    exports_19("customColor", customColor);
+    exports_14("customColor", customColor);
     /**
      * Apply a theme to an element
      *
@@ -3495,7 +2734,7 @@ System.register("utils/theme_utils", ["blend/blend", "palettes/core_palette", "s
             }
         }
     }
-    exports_19("applyTheme", applyTheme);
+    exports_14("applyTheme", applyTheme);
     function setSchemeProperties(target, scheme, suffix = '') {
         for (const [key, value] of Object.entries(scheme.toJSON())) {
             const token = key.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
@@ -3513,9 +2752,6 @@ System.register("utils/theme_utils", ["blend/blend", "palettes/core_palette", "s
             },
             function (scheme_1_1) {
                 scheme_1 = scheme_1_1;
-            },
-            function (image_utils_1_1) {
-                image_utils_1 = image_utils_1_1;
             },
             function (string_utils_1_1) {
                 string_utils_1 = string_utils_1_1;
@@ -3556,15 +2792,15 @@ System.register("utils/theme_utils", ["blend/blend", "palettes/core_palette", "s
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-System.register("index", ["blend/blend", "hct/cam16", "hct/hct", "hct/viewing_conditions", "palettes/core_palette", "palettes/tonal_palette", "quantize/quantizer_celebi", "quantize/quantizer_map", "quantize/quantizer_wsmeans", "quantize/quantizer_wu", "scheme/scheme", "scheme/scheme_android", "score/score", "utils/color_utils", "utils/math_utils", "utils/string_utils", "utils/image_utils", "utils/theme_utils"], function (exports_20, context_20) {
+System.register("index", ["blend/blend", "hct/cam16", "hct/hct", "hct/viewing_conditions", "palettes/core_palette", "palettes/tonal_palette", "scheme/scheme", "scheme/scheme_android", "score/score", "utils/color_utils", "utils/math_utils", "utils/string_utils", "utils/theme_utils"], function (exports_15, context_15) {
     "use strict";
-    var __moduleName = context_20 && context_20.id;
+    var __moduleName = context_15 && context_15.id;
     function exportStar_1(m) {
         var exports = {};
         for (var n in m) {
             if (n !== "default") exports[n] = m[n];
         }
-        exports_20(exports);
+        exports_15(exports);
     }
     return {
         setters: [
@@ -3586,38 +2822,23 @@ System.register("index", ["blend/blend", "hct/cam16", "hct/hct", "hct/viewing_co
             function (tonal_palette_2_1) {
                 exportStar_1(tonal_palette_2_1);
             },
-            function (quantizer_celebi_2_1) {
-                exportStar_1(quantizer_celebi_2_1);
-            },
-            function (quantizer_map_2_1) {
-                exportStar_1(quantizer_map_2_1);
-            },
-            function (quantizer_wsmeans_2_1) {
-                exportStar_1(quantizer_wsmeans_2_1);
-            },
-            function (quantizer_wu_2_1) {
-                exportStar_1(quantizer_wu_2_1);
-            },
             function (scheme_2_1) {
                 exportStar_1(scheme_2_1);
             },
             function (scheme_android_1_1) {
                 exportStar_1(scheme_android_1_1);
             },
-            function (score_2_1) {
-                exportStar_1(score_2_1);
+            function (score_1_1) {
+                exportStar_1(score_1_1);
             },
-            function (color_utils_2_1) {
-                exportStar_1(color_utils_2_1);
+            function (color_utils_1_1) {
+                exportStar_1(color_utils_1_1);
             },
             function (math_utils_1_1) {
                 exportStar_1(math_utils_1_1);
             },
             function (string_utils_2_1) {
                 exportStar_1(string_utils_2_1);
-            },
-            function (image_utils_2_1) {
-                exportStar_1(image_utils_2_1);
             },
             function (theme_utils_1_1) {
                 exportStar_1(theme_utils_1_1);
@@ -3639,105 +2860,8 @@ System.register("index", ["blend/blend", "hct/cam16", "hct/hct", "hct/viewing_co
              * See the License for the specific language governing permissions and
              * limitations under the License.
              */
-            // console.log('hello')
-            throw new Error;
-        }
-    };
-});
-/**
- * @license
- * Copyright 2021 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/**
- * @license
- * Copyright 2021 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-System.register("quantize/lab_point_provider", ["./point_provider", "utils/color_utils"], function (exports_21, context_21) {
-    "use strict";
-    var utils, LabPointProvider;
-    var __moduleName = context_21 && context_21.id;
-    return {
-        setters: [
-            function (_1) {
-            },
-            function (utils_7) {
-                utils = utils_7;
-            }
-        ],
-        execute: function () {/**
-             * @license
-             * Copyright 2021 Google LLC
-             *
-             * Licensed under the Apache License, Version 2.0 (the "License");
-             * you may not use this file except in compliance with the License.
-             * You may obtain a copy of the License at
-             *
-             *      http://www.apache.org/licenses/LICENSE-2.0
-             *
-             * Unless required by applicable law or agreed to in writing, software
-             * distributed under the License is distributed on an "AS IS" BASIS,
-             * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-             * See the License for the specific language governing permissions and
-             * limitations under the License.
-             */
-            /**
-             * Provides conversions needed for K-Means quantization. Converting input to
-             * points, and converting the final state of the K-Means algorithm to colors.
-             */
-            LabPointProvider = class LabPointProvider {
-                /**
-                 * Convert a color represented in ARGB to a 3-element array of L*a*b*
-                 * coordinates of the color.
-                 */
-                fromInt(argb) {
-                    return utils.labFromArgb(argb);
-                }
-                /**
-                 * Convert a 3-element array to a color represented in ARGB.
-                 */
-                toInt(point) {
-                    return utils.argbFromLab(point[0], point[1], point[2]);
-                }
-                /**
-                 * Standard CIE 1976 delta E formula also takes the square root, unneeded
-                 * here. This method is used by quantization algorithms to compare distance,
-                 * and the relative ordering is the same, with or without a square root.
-                 *
-                 * This relatively minor optimization is helpful because this method is
-                 * called at least once for each pixel in an image.
-                 */
-                distance(from, to) {
-                    const dL = from[0] - to[0];
-                    const dA = from[1] - to[1];
-                    const dB = from[2] - to[2];
-                    return dL * dL + dA * dA + dB * dB;
-                }
-            };
-            exports_21("LabPointProvider", LabPointProvider);
+            console.log('hello')
+            // throw new Error;
         }
     };
 });
