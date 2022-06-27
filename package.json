@@ -29,9 +29,10 @@
     "dist/**/*"
   ],
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc -w",
-    "prepublishOnly": "npm run build"
+    "build": "rm -rf ./dist ./dist* && tsc",
+    "build:watch": "npm run build -- -w",
+    "prepublishOnly": "npm run build",
+    "test": "rspec _ruby"
   },
   "devDependencies": {
     "tslib": "^2.4.0",
