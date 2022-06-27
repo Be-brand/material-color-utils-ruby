@@ -13,7 +13,7 @@ def load_index context
       globalThis.index = await System.import('index')
     })()
 
-    function getIndex() { return index }
+    function getIndex() { return globalThis.index }
   "
 
   context.call 'getIndex'
