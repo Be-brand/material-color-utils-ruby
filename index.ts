@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-// console.log('hello')
-throw new Error
 export * from './blend/blend';
 export * from './hct/cam16';
 export * from './hct/hct';
