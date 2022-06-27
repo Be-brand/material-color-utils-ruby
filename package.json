@@ -34,8 +34,6 @@
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
-    "@types/jasmine": "^3.10.3",
-    "jasmine": "^4.0.2",
     "tslib": "^2.4.0",
     "typescript": "^4.5.5"
   },
