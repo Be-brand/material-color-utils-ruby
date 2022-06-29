@@ -1,5 +1,6 @@
 require 'mini_racer'
-require "active_support/core_ext/hash/indifferent_access"
+require 'active_support/core_ext/hash/indifferent_access'
+require 'active_support/core_ext/hash/except'
 
 class Runner
   def self.load
@@ -38,17 +39,48 @@ class Runner
     "
   end
 
-  def make_theme color
-    theme = @context.eval"
-      themeFromSourceColor(#{color})
-    "
+  def make_theme colors
+    theme = @context.eval"themeFromSourceColor(#{colors[:primary]})"
     theme.with_indifferent_access
   end
 
-  def make_palette color
+  def make_theme_from_core_palette core_palette
+    light_scheme = make_light_scheme_from_core_palette core_palette
+    dark_scheme = make_dark_scheme_from_core_palette core_palette
     @context.eval "
-      new CorePalette(#{color})
+      (function () {
+        return {
+          source,
+          schemes: {
+            light: #{light_scheme},
+            dark: #{dark_scheme},
+          },
+          palettes: #{core_palette.to_json},
+        }
+      })()
     "
+  end
+
+  def make_core_palette source_colors
+    core_palette = instantiate_core_palette source_colors[:primary]
+    palette_colors = {
+      primary: :a1,
+      secondary: :a2,
+      tertiary: :a3,
+      background: :n1,
+      outline: :n2,
+    }
+    palette_colors.except(:primary).each do |(name, key)|
+      next unless source_colors.key? name
+      tonal_palette = make_tonal_palette source_colors[name]
+      core_palette[key] = tonal_palette
+    end
+    core_palette
+  end
+
+  def instantiate_core_palette *args
+    core_palette = @context.eval "new CorePalette(...#{args})"
+    core_palette.with_indifferent_access
   end
 
   def make_light_scheme color
@@ -68,29 +100,28 @@ class Runner
     "
   end
 
-  def make_schemes
-    @context.eval "
-      globalThis.schemes = tryMakeSchemes()
-
-      function getSchemes() { return globalThis.schemes }
-
-      function tryMakeSchemes() {
-        try {
-          return makeSchemes()
-        } catch (e) {
-          return e
-        }
-      }
-
-      function makeSchemes() {
-        let palette = new CorePalette(#{6770852})
-        return {
-          light_scheme: Scheme.lightFromCorePalette(palette),
-          dark_scheme: Scheme.darkFromCorePalette(palette),
-        }
-      }
-    "
-
-    @context.call 'getSchemes'
+  def make_light_scheme_from_core_palette core_palette
+    make_scheme_from_core_palette core_palette, :light
   end
+
+  def make_dark_scheme_from_core_palette core_palette
+    make_scheme_from_core_palette core_palette, :dark
+  end
+
+  def make_scheme_from_core_palette core_palette, type
+    @context.eval "
+      (function () {
+        return Scheme.#{type}FromCorePalette(#{core_palette.to_json})
+      })()
+    "
+  end
+
+
+  def make_tonal_palette color
+  @context.eval "
+    TonalPalette.fromInt(#{color})
+  "
+  end
+
+
 end
