@@ -12,6 +12,6 @@ Gem::Specification.new do |spec|
   spec.test_files = Dir['spec/**/*']
 
   spec.add_dependency "mini_racer", "~> 0.6.2"
-  spec.add_dependency "activesupport",
-  spec.add_development_dependency "rspec",
+  spec.add_dependency "activesupport"
+  spec.add_development_dependency "rspec"
 end
