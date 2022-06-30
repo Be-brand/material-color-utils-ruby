@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
-  spec.name        = "material-color-utils"
-  spec.version     = "0.1.0"
+  spec.name        = "material_color_utils"
+  spec.version     = "0.1.1"
   spec.authors     = ["Eden Landau"]
   spec.email       = ["edenworky@gmail.com"]
   spec.summary     = "material color utils ruby"
