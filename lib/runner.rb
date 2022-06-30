@@ -23,105 +23,96 @@ class Runner
       (async function () {
         let index = await System.import('index')
         globalThis = Object.assign(globalThis, index)
-      })()
-    "
-  end
 
-  def valid_theme? theme, color
-    @context.eval "
-      const theme = themeFromSourceColor(#{color})
-      const palette = new CorePalette(#{color})
-      const light_scheme = Scheme.lightFromCorePalette(palette)
-      const dark_scheme = Scheme.darkFromCorePalette(palette)
-      if (theme.source === color) {
-        console.log('source equal to color')
-      }
-    "
-  end
+        globalThis.makeTonalPalette = function (color) {
+          return TonalPalette.fromInt(color)
+        }
 
-  def make_theme colors
-    theme = @context.eval"themeFromSourceColor(#{colors[:primary]})"
-    theme.with_indifferent_access
-  end
+        globalThis.makeCorePalette = function (colors) {
+          core_palette = new CorePalette(colors.primary)
+          palette_colors = {
+            primary: 'a1',
+            secondary: 'a2',
+            tertiary: 'a3',
+            background: 'n1',
+            outline: 'n2'
+          }
+          Object.entries(colors).forEach(([name, value]) => {
+            tonal_palette = makeTonalPalette(value)
+            representation = palette_colors[name]
+            core_palette[representation] = tonal_palette
+          })
+          return core_palette
+        }
 
-  def make_theme_from_core_palette core_palette
-    light_scheme = make_light_scheme_from_core_palette core_palette
-    dark_scheme = make_dark_scheme_from_core_palette core_palette
-    @context.eval "
-      (function () {
-        return {
-          source,
-          schemes: {
-            light: #{light_scheme},
-            dark: #{dark_scheme},
-          },
-          palettes: #{core_palette.to_json},
+        globalThis.makeSchemeFromCorePalette = function (core_palette, type) {
+          return Scheme[`${type}FromCorePalette`](core_palette)
+        }
+
+        globalThis.makeLightSchemeFromCorePalette = function (core_palette) {
+          makeSchemeFromCorePalette(core_palette, 'light')
+        }
+
+        globalThis.makeDarkSchemeFromCorePalette = function (core_palette) {
+          makeSchemeFromCorePalette(core_palette, 'dark')
+        }
+
+        globalThis.makeThemeFromColors = function (colors) {
+          core_palette = makeCorePalette(colors)
+          return {
+            source: colors.primary,
+            schemes: {
+              light: makeLightSchemeFromCorePalette(core_palette),
+              dark: makeDarkSchemeFromCorePalette(core_palette)
+            },
+            palettes: {
+              primary: core_palette.a1,
+              secondary: core_palette.a2,
+              tertiary: core_palette.a3,
+              neutral: core_palette.n1,
+              neutralVariant: core_palette.n2,
+              error: core_palette.error,
+            },
+          }
         }
       })()
     "
   end
 
-  def make_core_palette source_colors
-    core_palette = instantiate_core_palette source_colors[:primary]
-    palette_colors = {
-      primary: :a1,
-      secondary: :a2,
-      tertiary: :a3,
-      background: :n1,
-      outline: :n2,
-    }
-    palette_colors.except(:primary).each do |(name, key)|
-      next unless source_colors.key? name
-      tonal_palette = make_tonal_palette source_colors[name]
-      core_palette[key] = tonal_palette
-    end
-    core_palette
+  def make_theme_from_colors colors
+    theme = @context.eval "
+      makeThemeFromColors(#{colors.to_json})
+    "
+    theme.with_indifferent_access
   end
 
-  def instantiate_core_palette *args
-    core_palette = @context.eval "new CorePalette(...#{args})"
+  def make_core_palette colors
+    core_palette = @context.eval "
+      makeCorePalette(#{colors.to_json})
+    "
     core_palette.with_indifferent_access
   end
 
-  def make_light_scheme color
-    make_scheme color, :light
+  def make_light_scheme_from_colors colors
+    make_scheme_from_colors colors, :Light
   end
 
-  def make_dark_scheme color
-    make_scheme color, :dark
+  def make_dark_scheme_from_colors colors
+    make_scheme_from_colors colors, :Dark
   end
 
-  def make_scheme color, type
+  def make_scheme_from_colors colors, type
     @context.eval "
       (function () {
-        let palette = new CorePalette(#{color})
-        return Scheme.#{type}FromCorePalette(palette)
+        core_palette = makeCorePalette(#{colors.to_json})
+        return make#{type}SchemeFromCorePalette(core_palette)
       })()
     "
   end
-
-  def make_light_scheme_from_core_palette core_palette
-    make_scheme_from_core_palette core_palette, :light
-  end
-
-  def make_dark_scheme_from_core_palette core_palette
-    make_scheme_from_core_palette core_palette, :dark
-  end
-
-  def make_scheme_from_core_palette core_palette, type
-    @context.eval "
-      (function () {
-        return Scheme.#{type}FromCorePalette(#{core_palette.to_json})
-      })()
-    "
-  end
-
 
   def make_tonal_palette color
-  @context.eval "
-    TonalPalette.fromInt(#{color})
-  "
+    @context.eval "
+      makeTonalPalette(#{color})
+    "
   end
-
-
 end
