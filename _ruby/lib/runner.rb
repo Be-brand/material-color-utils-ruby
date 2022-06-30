@@ -6,9 +6,9 @@ class Runner
   def self.load
     context = MiniRacer::Context.new
     context.eval 'let global = globalThis'
-    context.eval File.read '_ruby/static/system.min.js'
-    context.eval File.read '_ruby/static/named-register.js'
-    context.eval File.read 'dist.js'
+    context.eval File.read(File.join(File.dirname(__FILE__),'../static/system.min.js'))
+    context.eval File.read(File.join(File.dirname(__FILE__),'../static/named-register.js'))
+    context.eval File.read(File.join(File.dirname(__FILE__),'../static/dist.js'))
     runner = self.new context
     runner.load_index
     runner

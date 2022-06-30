@@ -29,12 +29,14 @@
     "dist/**/*"
   ],
   "scripts": {
-    "build": "rm -rf ./dist ./dist* && tsc",
+    "build": "rm -rf ./_ruby/static/dist ./_ruby/static/dist* && tsc",
     "build:watch": "npm run build -- -w",
     "prepublishOnly": "npm run build",
-    "test": "rspec _ruby"
+    "test": "rspec _ruby",
+    "deploy": "git subtree push --prefix _ruby origin gem"
   },
   "devDependencies": {
+    "push-dir": "^0.4.1",
     "tslib": "^2.4.0",
     "typescript": "^4.5.5"
   },

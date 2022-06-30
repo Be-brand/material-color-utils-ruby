@@ -13,7 +13,7 @@
     "noUnusedLocals": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": false,
-    "outFile": "dist.js",
+    "outFile": "_ruby/static/dist.js",
     "composite": true
   },
   "include": [
