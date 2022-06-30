@@ -1,4 +1,4 @@
-require_relative '../lib/runner'
+require_relative '../lib/material_color_utils'
 require "active_support/core_ext/hash/indifferent_access"
 
 RSpec.describe 'theme builder' do
