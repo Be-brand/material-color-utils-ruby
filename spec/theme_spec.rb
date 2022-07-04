@@ -1,13 +1,25 @@
 require_relative '../lib/material_color_utils'
 require "active_support/core_ext/hash/indifferent_access"
 
-RSpec.describe 'theme builder' do
+RSpec::Matchers.define :be_color_hex do
+  match do |actual|
+    color_hex_regex = /\A#\h{6}\h{2}?\z/
+    color_hex_regex.match? actual
+  end
+end
 
+RSpec.describe 'theme builder' do
   it 'creates valid theme given primary color' do
     runner = Runner.load
     colors = { primary: 6770852 }
-    primary_color = colors[:primary]
     theme = runner.make_theme_from_colors colors
+    p theme
+    assert_valid_theme_for_colors theme, colors
+  end
+
+  def assert_valid_theme_for_colors theme, colors
+    runner = Runner.load
+    primary_color = colors[:primary]
     light_scheme = runner.make_light_scheme_from_colors colors
     dark_scheme = runner.make_dark_scheme_from_colors colors
     primary_tonal_palette = runner.make_tonal_palette primary_color
@@ -15,6 +27,8 @@ RSpec.describe 'theme builder' do
     expect(theme[:schemes][:light]).to eq light_scheme
     expect(theme[:schemes][:dark]).to eq dark_scheme
     expect(theme[:palettes][:primary]).to eq primary_tonal_palette
+    expect(theme[:schemes][:light][:primary]).to be_color_hex
+    expect(theme[:schemes][:light][:on_primary]).to be_color_hex
   end
 
   it 'creates core palette when primary and secondary colors are given' do

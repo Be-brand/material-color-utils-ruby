@@ -50,16 +50,32 @@ class Runner
         }
 
         globalThis.makeLightSchemeFromCorePalette = function (core_palette) {
-          makeSchemeFromCorePalette(core_palette, 'light')
+          return makeSchemeFromCorePalette(core_palette, 'light')
         }
 
         globalThis.makeDarkSchemeFromCorePalette = function (core_palette) {
-          makeSchemeFromCorePalette(core_palette, 'dark')
+          return makeSchemeFromCorePalette(core_palette, 'dark')
+        }
+
+        globalThis.convertTonalPaletteToHex = function (tonal_palette) {
+          tonal_numbers = [100, 99, 98, 95, 90, 80, 70, 60, 50, 40, 35, 30, 25, 20, 10, 0]
+          return tonal_numbers.reduce((acc, tonal_number) => ({...acc, [tonal_number]: hexFromArgb(tonal_palette.tone(tonal_number))}), {})
+        }
+
+        globalThis.convertThemeColorsToHex = function (theme) {
+          return {
+            source: hexFromArgb(theme.source),
+            schemes: {
+              light: Object.entries(theme.schemes.light.props).reduce((acc, [name, value]) => ({ ...acc, [name]: hexFromArgb(value) }), {}),
+              dark: Object.entries(theme.schemes.dark.props).reduce((acc, [name, value]) => ({ ...acc, [name]: hexFromArgb(value) }), {}),
+            },
+            palettes: Object.entries(theme.palettes).reduce((acc, [name, value]) => ({ ...acc, [name]: convertTonalPaletteToHex(value) }), {}),
+          }
         }
 
         globalThis.makeThemeFromColors = function (colors) {
           core_palette = makeCorePalette(colors)
-          return {
+          theme = {
             source: colors.primary,
             schemes: {
               light: makeLightSchemeFromCorePalette(core_palette),
@@ -74,6 +90,7 @@ class Runner
               error: core_palette.error,
             },
           }
+          return convertThemeColorsToHex(theme)
         }
       })()
     "
