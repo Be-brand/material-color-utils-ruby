@@ -1,135 +1,134 @@
 require 'mini_racer'
 require 'active_support/core_ext/hash/indifferent_access'
 require 'active_support/core_ext/hash/except'
+require 'active_support/core_ext/string/inflections'
 
-class Runner
-  def self.load
-    context = MiniRacer::Context.new
-    context.eval 'let global = globalThis'
-    context.eval File.read(File.join(File.dirname(__FILE__),'../static/system.min.js'))
-    context.eval File.read(File.join(File.dirname(__FILE__),'../static/named-register.js'))
-    context.eval File.read(File.join(File.dirname(__FILE__),'../static/dist.js'))
-    runner = self.new context
-    runner.load_index
-    runner
-  end
+module ThemeBuilder
+  class Material3
+    def self.load
+      context = MiniRacer::Context.new
+      context.eval 'let global = globalThis'
+      context.eval File.read(File.join(File.dirname(__FILE__),'../static/system.min.js'))
+      context.eval File.read(File.join(File.dirname(__FILE__),'../static/named-register.js'))
+      context.eval File.read(File.join(File.dirname(__FILE__),'../static/dist.js'))
+      runner = self.new context
+      runner.load_index
+      runner.load_custom_code
+      runner
+    end
 
-  def initialize context
-    @context = context
-  end
+    def initialize context
+      @context = context
+    end
 
-  def load_index
-    @context.eval "
-      (async function () {
-        let index = await System.import('index')
-        globalThis = Object.assign(globalThis, index)
+    def load_index
+      @context.eval "
+        (async function () {
+          let index = await System.import('index')
+          globalThis = Object.assign(globalThis, index)
+        })()
+      "
+    end
 
-        globalThis.makeTonalPalette = function (color) {
-          return TonalPalette.fromInt(color)
-        }
-
-        globalThis.makeCorePalette = function (colors) {
-          core_palette = new CorePalette(colors.primary)
-          palette_colors = {
-            primary: 'a1',
-            secondary: 'a2',
-            tertiary: 'a3',
-            background: 'n1',
-            outline: 'n2'
+    def load_custom_code
+      @context.eval "
+        (async function () {
+          globalThis.isInt = function (value) {
+            return value === parseInt(value, 10)
           }
-          Object.entries(colors).forEach(([name, value]) => {
-            tonal_palette = makeTonalPalette(value)
-            representation = palette_colors[name]
-            core_palette[representation] = tonal_palette
-          })
-          return core_palette
-        }
 
-        globalThis.makeSchemeFromCorePalette = function (core_palette, type) {
-          return Scheme[`${type}FromCorePalette`](core_palette)
-        }
-
-        globalThis.makeLightSchemeFromCorePalette = function (core_palette) {
-          return makeSchemeFromCorePalette(core_palette, 'light')
-        }
-
-        globalThis.makeDarkSchemeFromCorePalette = function (core_palette) {
-          return makeSchemeFromCorePalette(core_palette, 'dark')
-        }
-
-        globalThis.convertTonalPaletteToHex = function (tonal_palette) {
-          tonal_numbers = [100, 99, 98, 95, 90, 80, 70, 60, 50, 40, 35, 30, 25, 20, 10, 0]
-          return tonal_numbers.reduce((acc, tonal_number) => ({...acc, [tonal_number]: hexFromArgb(tonal_palette.tone(tonal_number))}), {})
-        }
-
-        globalThis.convertThemeColorsToHex = function (theme) {
-          return {
-            source: hexFromArgb(theme.source),
-            schemes: {
-              light: Object.entries(theme.schemes.light.props).reduce((acc, [name, value]) => ({ ...acc, [name]: hexFromArgb(value) }), {}),
-              dark: Object.entries(theme.schemes.dark.props).reduce((acc, [name, value]) => ({ ...acc, [name]: hexFromArgb(value) }), {}),
-            },
-            palettes: Object.entries(theme.palettes).reduce((acc, [name, value]) => ({ ...acc, [name]: convertTonalPaletteToHex(value) }), {}),
+          globalThis.convertArgbToHex = function (argb) {
+            return '#'+argb.toString(16).padStart(8, '0')
           }
-        }
 
-        globalThis.makeThemeFromColors = function (colors) {
-          core_palette = makeCorePalette(colors)
-          theme = {
-            source: colors.primary,
-            schemes: {
-              light: makeLightSchemeFromCorePalette(core_palette),
-              dark: makeDarkSchemeFromCorePalette(core_palette)
-            },
-            palettes: {
-              primary: core_palette.a1,
-              secondary: core_palette.a2,
-              tertiary: core_palette.a3,
-              neutral: core_palette.n1,
-              neutralVariant: core_palette.n2,
-              error: core_palette.error,
-            },
+          globalThis.convertHexToArgb = function (hex) {
+            return parseInt(hex.slice(1), 16)
           }
-          return convertThemeColorsToHex(theme)
-        }
-      })()
-    "
-  end
 
-  def make_theme_from_colors colors
-    theme = @context.eval "
-      makeThemeFromColors(#{colors.to_json})
-    "
-    theme.with_indifferent_access
-  end
+          globalThis.convertColorsObjectValuesToArgb = function (colors) {
+            return Object.entries(colors).reduce((acc, [name, value]) => ({ ...acc, [name]: isInt(value) ? value : convertHexToArgb(value) }), {})
+          }
 
-  def make_core_palette colors
-    core_palette = @context.eval "
-      makeCorePalette(#{colors.to_json})
-    "
-    core_palette.with_indifferent_access
-  end
+          globalThis.makeTonalPalette = function (color) {
+            return TonalPalette.fromInt(color)
+          }
 
-  def make_light_scheme_from_colors colors
-    make_scheme_from_colors colors, :Light
-  end
+          globalThis.makeCorePalette = function (colors) {
+            core_palette = new CorePalette(colors.primary)
+            palette_colors = {
+              primary: 'a1',
+              secondary: 'a2',
+              tertiary: 'a3',
+              background: 'n1',
+              outline: 'n2'
+            }
+            Object.entries(colors).forEach(([name, value]) => {
+              tonal_palette = makeTonalPalette(value)
+              representation = palette_colors[name]
+              core_palette[representation] = tonal_palette
+            })
+            return core_palette
+          }
 
-  def make_dark_scheme_from_colors colors
-    make_scheme_from_colors colors, :Dark
-  end
+          globalThis.makeSchemeFromCorePalette = function (core_palette, type) {
+            return Scheme[`${type}FromCorePalette`](core_palette)
+          }
 
-  def make_scheme_from_colors colors, type
-    @context.eval "
-      (function () {
-        core_palette = makeCorePalette(#{colors.to_json})
-        return make#{type}SchemeFromCorePalette(core_palette)
-      })()
-    "
-  end
+          globalThis.makeLightSchemeFromCorePalette = function (core_palette) {
+            return makeSchemeFromCorePalette(core_palette, 'light')
+          }
 
-  def make_tonal_palette color
-    @context.eval "
-      makeTonalPalette(#{color})
-    "
+          globalThis.makeDarkSchemeFromCorePalette = function (core_palette) {
+            return makeSchemeFromCorePalette(core_palette, 'dark')
+          }
+
+          globalThis.convertTonalPaletteToHex = function (tonal_palette) {
+            tonal_numbers = [100, 99, 98, 95, 90, 80, 70, 60, 50, 40, 35, 30, 25, 20, 10, 0]
+            return tonal_numbers.reduce((acc, tonal_number) => ({...acc, [tonal_number]: convertArgbToHex(tonal_palette.tone(tonal_number))}), {})
+          }
+
+          globalThis.convertThemeColorsToHex = function (theme) {
+            return {
+              source: convertArgbToHex(theme.source),
+              schemes: {
+                light: Object.entries(theme.schemes.light.props).reduce((acc, [name, value]) => ({ ...acc, [name]: convertArgbToHex(value) }), {}),
+                dark: Object.entries(theme.schemes.dark.props).reduce((acc, [name, value]) => ({ ...acc, [name]: convertArgbToHex(value) }), {}),
+              },
+              palettes: Object.entries(theme.palettes).reduce((acc, [name, value]) => ({ ...acc, [name]: convertTonalPaletteToHex(value) }), {}),
+            }
+          }
+
+          globalThis.makeThemeFromColors = function (colors) {
+            argbColors = convertColorsObjectValuesToArgb(colors)
+            core_palette = makeCorePalette(argbColors)
+            theme = {
+              source: argbColors.primary,
+              schemes: {
+                light: makeLightSchemeFromCorePalette(core_palette),
+                dark: makeDarkSchemeFromCorePalette(core_palette)
+              },
+              palettes: {
+                primary: core_palette.a1,
+                secondary: core_palette.a2,
+                tertiary: core_palette.a3,
+                neutral: core_palette.n1,
+                neutralVariant: core_palette.n2,
+                error: core_palette.error,
+              },
+            }
+            return convertThemeColorsToHex(theme)
+          }
+        })()
+      "
+    end
+
+    def make_theme_from_colors colors
+      theme = @context.eval "
+        makeThemeFromColors(#{colors.to_json})
+      "
+      theme = theme.with_indifferent_access.deep_transform_keys { |key| key.underscore }
+      theme[:palettes] = theme[:palettes].transform_values { |value| value.transform_keys { |key| key.to_i } }
+      return theme
+    end
   end
 end

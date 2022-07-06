@@ -9,65 +9,53 @@ RSpec::Matchers.define :be_color_hex do
 end
 
 RSpec.describe 'theme builder' do
+  let(:material3) { ThemeBuilder::Material3.load }
+
   it 'creates valid theme given primary color' do
-    runner = Runner.load
     colors = { primary: 6770852 }
-    theme = runner.make_theme_from_colors colors
-    p theme
+    theme = material3.make_theme_from_colors colors
+    assert_valid_theme_for_colors theme, colors
+  end
+
+  it 'creates valid theme when primary and secondary colors are given' do
+    colors = { primary: 6770852, secondary: 0 }
+    theme = material3.make_theme_from_colors colors
     assert_valid_theme_for_colors theme, colors
   end
 
   def assert_valid_theme_for_colors theme, colors
-    runner = Runner.load
-    primary_color = colors[:primary]
-    light_scheme = runner.make_light_scheme_from_colors colors
-    dark_scheme = runner.make_dark_scheme_from_colors colors
-    primary_tonal_palette = runner.make_tonal_palette primary_color
-    expect(theme[:source]).to eq primary_color
-    expect(theme[:schemes][:light]).to eq light_scheme
-    expect(theme[:schemes][:dark]).to eq dark_scheme
-    expect(theme[:palettes][:primary]).to eq primary_tonal_palette
+    expect(theme[:source]).to be_color_hex
     expect(theme[:schemes][:light][:primary]).to be_color_hex
     expect(theme[:schemes][:light][:on_primary]).to be_color_hex
-  end
-
-  it 'creates core palette when primary and secondary colors are given' do
-    runner = Runner.load
-    colors = { primary: 6770852, secondary: 0 }
-    core_palette = runner.make_core_palette colors
-    tonal_palette = runner.make_tonal_palette colors[:secondary]
-    expect(core_palette[:a2]).to eq tonal_palette
+    expect(theme[:schemes][:dark][:primary]).to be_color_hex
+    expect(theme[:schemes][:dark][:on_primary]).to be_color_hex
+    expect(theme[:palettes][:primary][0]).to be_color_hex
+    expect(theme[:palettes][:secondary][10]).to be_color_hex
   end
 
   it 'use primary-based tonal palettes when not overwritten' do
-    runner = Runner.load
     colors_with_secondary_color = { primary: 6770852, secondary: 0 }
     colors = { primary: 6770852 }
-    primary_based_core_palette = runner.make_core_palette colors
-    core_palette = runner.make_core_palette colors_with_secondary_color
-    expect(primary_based_core_palette[:a3]).to eq core_palette[:a3]
+    themeWithSecondary = material3.make_theme_from_colors colors_with_secondary_color
+    theme = material3.make_theme_from_colors colors
+    primary_based_palettes = theme[:palettes]
+    primary_and_secondary_palettes = themeWithSecondary[:palettes]
+    expect(primary_based_palettes[:tertiary]).to eq primary_and_secondary_palettes[:tertiary]
   end
 
-  it 'creates valid theme given primary and secondary color' do
-    runner = Runner.load
-    colors = { primary: 6770852, secondary: 0 }
-    secondary_color = colors[:secondary]
-    theme = runner.make_theme_from_colors colors
-    core_palette = runner.make_core_palette colors
-    light_scheme = runner.make_light_scheme_from_colors colors
-    dark_scheme = runner.make_dark_scheme_from_colors colors
-    secondary_tonal_palette = runner.make_tonal_palette secondary_color
-    expect(theme[:schemes][:light]).to eq light_scheme
-    expect(theme[:schemes][:dark]).to eq dark_scheme
-    expect(theme[:palettes][:secondary]).to eq secondary_tonal_palette
+  it 'can create theme given argb or hex colors' do
+    argbColors = { primary: 6770852, secondary: 0 }
+    hexColors = { primary: '#006750a4', secondary: '#00000000' }
+    themeFromArgb = material3.make_theme_from_colors(argbColors)
+    themeFromHex = material3.make_theme_from_colors(hexColors)
+    expect(themeFromArgb).to eq themeFromHex
   end
 
   xit 'creates theme with custom colors' do
-    runner = Runner.load
     colors = { primary: 6770852, secondary: 0 }
     custom_colors = { custom1: 8570852, custom2: 2234801 }
-    theme = runner.make_theme_from_colors colors, custom_colors
-    custom_color = runner.make_custom_color custom_colors[:custom1]
+    theme = material3.make_theme_from_colors colors, custom_colors
+    custom_color = material3.make_custom_color custom_colors[:custom1]
     expect(theme[:customColors][:custom1]).to eq custom_color
   end
 end
