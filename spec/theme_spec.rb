@@ -13,31 +13,21 @@ RSpec.describe 'theme builder' do
 
   it 'creates valid theme given primary color' do
     colors = { primary: 6770852 }
-    theme = material3.make_theme_from_colors colors
-    assert_valid_theme_for_colors theme, colors
+    theme = material3.build colors
+    assert_valid_theme_for_colors theme
   end
 
   it 'creates valid theme when primary and secondary colors are given' do
     colors = { primary: 6770852, secondary: 0 }
-    theme = material3.make_theme_from_colors colors
-    assert_valid_theme_for_colors theme, colors
-  end
-
-  def assert_valid_theme_for_colors theme, colors
-    expect(theme[:source]).to be_color_hex
-    expect(theme[:schemes][:light][:primary]).to be_color_hex
-    expect(theme[:schemes][:light][:on_primary]).to be_color_hex
-    expect(theme[:schemes][:dark][:primary]).to be_color_hex
-    expect(theme[:schemes][:dark][:on_primary]).to be_color_hex
-    expect(theme[:palettes][:primary][0]).to be_color_hex
-    expect(theme[:palettes][:secondary][10]).to be_color_hex
+    theme = material3.build colors
+    assert_valid_theme_for_colors theme
   end
 
   it 'use primary-based tonal palettes when not overwritten' do
     colors_with_secondary_color = { primary: 6770852, secondary: 0 }
     colors = { primary: 6770852 }
-    themeWithSecondary = material3.make_theme_from_colors colors_with_secondary_color
-    theme = material3.make_theme_from_colors colors
+    themeWithSecondary = material3.build colors_with_secondary_color
+    theme = material3.build colors
     primary_based_palettes = theme[:palettes]
     primary_and_secondary_palettes = themeWithSecondary[:palettes]
     expect(primary_based_palettes[:tertiary]).to eq primary_and_secondary_palettes[:tertiary]
@@ -45,17 +35,64 @@ RSpec.describe 'theme builder' do
 
   it 'can create theme given argb or hex colors' do
     argbColors = { primary: 6770852, secondary: 0 }
-    hexColors = { primary: '#006750a4', secondary: '#00000000' }
-    themeFromArgb = material3.make_theme_from_colors(argbColors)
-    themeFromHex = material3.make_theme_from_colors(hexColors)
+    hexColors = { primary: '#6750a4', secondary: '#000000' }
+    themeFromArgb = material3.build(argbColors)
+    themeFromHex = material3.build(hexColors)
     expect(themeFromArgb).to eq themeFromHex
   end
 
-  xit 'creates theme with custom colors' do
-    colors = { primary: 6770852, secondary: 0 }
-    custom_colors = { custom1: 8570852, custom2: 2234801 }
-    theme = material3.make_theme_from_colors colors, custom_colors
-    custom_color = material3.make_custom_color custom_colors[:custom1]
-    expect(theme[:customColors][:custom1]).to eq custom_color
+  it 'returns the same color scheme given 4 hex colors' do
+    hexColors = { primary: '#6750a4', secondary: '#958da5',
+      tertiary: '#b58392', neutral: '#939094'}
+    color_scheme = material3.perfect_color_scheme(hexColors)
+    expect(color_scheme).to eq hexColors.with_indifferent_access
+  end
+
+  it 'returns the color scheme in hex given argb colors' do
+    argbColors = { primary: 6770852, secondary: 0,
+      tertiary: 8570852, neutral: 2234801 }
+    color_scheme = material3.perfect_color_scheme(argbColors)
+    assert_valid_color_scheme color_scheme
+  end
+
+  it 'returns the color scheme based on primary color' do
+    hexColors = { primary: '#6750a4' }
+    hexColors.with_indifferent_access
+    color_scheme = material3.perfect_color_scheme(hexColors)
+    expect(color_scheme[:primary]).to eq hexColors[:primary]
+    assert_valid_color_scheme color_scheme
+  end
+
+  it 'returns the color scheme based on primary and secondary colors' do
+    colors = { primary: '#6750a4', secondary: '#55a300' }
+    colors.with_indifferent_access
+    color_scheme = material3.perfect_color_scheme(colors)
+    expect(color_scheme[:primary]).to eq colors[:primary]
+    expect(color_scheme[:secondary]).to eq colors[:secondary]
+    assert_valid_color_scheme color_scheme
+  end
+
+  it 'build theme from perfected color scheme' do
+    colors = { primary: '#6750a4', neutral: '#00a1a8' }
+    color_scheme = material3.perfect_color_scheme(colors)
+    theme = material3.build(color_scheme)
+    assert_valid_theme_for_colors theme
+  end
+
+  def assert_valid_color_scheme color_scheme
+    expect(color_scheme[:primary]).to be_color_hex
+    expect(color_scheme[:secondary]).to be_color_hex
+    expect(color_scheme[:tertiary]).to be_color_hex
+    expect(color_scheme[:neutral]).to be_color_hex
+  end
+
+  def assert_valid_theme_for_colors theme
+    expect(theme[:source]).to be_color_hex
+    expect(theme[:schemes][:light][:primary]).to be_color_hex
+    expect(theme[:schemes][:light][:on_primary]).to be_color_hex
+    expect(theme[:schemes][:dark][:primary]).to be_color_hex
+    expect(theme[:schemes][:dark][:on_primary]).to be_color_hex
+    expect(theme[:palettes][:primary][0]).to be_color_hex
+    expect(theme[:palettes][:secondary][10]).to be_color_hex
   end
 end
