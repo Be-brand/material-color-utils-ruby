@@ -73,7 +73,7 @@ RSpec.describe 'theme builder' do
   end
 
   it 'build theme from perfected color scheme' do
-    colors = { primary: '#6750a4', neutral: '#00a1a8' }
+    colors = { primary: 0, neutral: 1 }
     color_scheme = material3.perfect_color_scheme(colors)
     theme = material3.build(color_scheme)
     assert_valid_theme_for_colors theme

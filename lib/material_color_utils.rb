@@ -119,7 +119,6 @@ module ThemeBuilder
             color_scheme = convertColorsObjectValuesToArgb(colors)
             core_palette = new CorePalette(color_scheme.primary)
             palette_colors = {
-              primary: 'a1',
               secondary: 'a2',
               tertiary: 'a3',
               neutral: 'n1'
