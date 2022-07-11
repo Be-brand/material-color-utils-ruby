@@ -33,7 +33,8 @@
     "build:watch": "npm run build -- -w",
     "prepublishOnly": "npm run build",
     "test": "rspec _ruby",
-    "deploy": "git subtree push --prefix _ruby origin gem"
+    "deploy": "git subtree push --prefix _ruby origin gem",
+    "predeploy": "npm run build"
   },
   "devDependencies": {
     "tslib": "^2.4.0",
