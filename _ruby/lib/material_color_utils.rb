@@ -37,10 +37,6 @@ module ThemeBuilder
             return value === parseInt(value, 10)
           }
 
-          globalThis.convertArgbToHex = function (argb) {
-            return '#'+argb.toString(16).padStart(8, '0')
-          }
-
           globalThis.convertHexToArgb = function (hex) {
             return parseInt(hex.slice(1), 16)
           }
@@ -84,15 +80,15 @@ module ThemeBuilder
 
           globalThis.convertTonalPaletteToHex = function (tonal_palette) {
             tonal_numbers = [100, 99, 98, 95, 90, 80, 70, 60, 50, 40, 35, 30, 25, 20, 10, 0]
-            return tonal_numbers.reduce((acc, tonal_number) => ({...acc, [tonal_number]: convertArgbToHex(tonal_palette.tone(tonal_number))}), {})
+            return tonal_numbers.reduce((acc, tonal_number) => ({...acc, [tonal_number]: hexFromArgb(tonal_palette.tone(tonal_number))}), {})
           }
 
           globalThis.convertThemeColorsToHex = function (theme) {
             return {
-              source: convertArgbToHex(theme.source),
+              source: hexFromArgb(theme.source),
               schemes: {
-                light: Object.entries(theme.schemes.light.props).reduce((acc, [name, value]) => ({ ...acc, [name]: convertArgbToHex(value) }), {}),
-                dark: Object.entries(theme.schemes.dark.props).reduce((acc, [name, value]) => ({ ...acc, [name]: convertArgbToHex(value) }), {}),
+                light: Object.entries(theme.schemes.light.props).reduce((acc, [name, value]) => ({ ...acc, [name]: hexFromArgb(value) }), {}),
+                dark: Object.entries(theme.schemes.dark.props).reduce((acc, [name, value]) => ({ ...acc, [name]: hexFromArgb(value) }), {}),
               },
               palettes: Object.entries(theme.palettes).reduce((acc, [name, value]) => ({ ...acc, [name]: convertTonalPaletteToHex(value) }), {}),
             }
@@ -118,17 +114,42 @@ module ThemeBuilder
             }
             return convertThemeColorsToHex(theme)
           }
+
+          globalThis.perfectColorScheme = function (colors) {
+            color_scheme = convertColorsObjectValuesToArgb(colors)
+            core_palette = new CorePalette(color_scheme.primary)
+            palette_colors = {
+              secondary: 'a2',
+              tertiary: 'a3',
+              neutral: 'n1'
+            }
+            Object.entries(palette_colors).forEach(([name, value]) => {
+              if(!color_scheme[name])
+                color_scheme[name] = core_palette[value].tone(60)
+            })
+            color_scheme = Object.entries(color_scheme)
+              .reduce((acc, [name, value]) =>
+                ({ ...acc, [name]: hexFromArgb(value) }), {})
+            return color_scheme
+          }
         })()
       "
     end
 
-    def make_theme_from_colors colors
+    def build colors
       theme = @context.eval "
         makeThemeFromColors(#{colors.to_json})
       "
       theme = theme.with_indifferent_access.deep_transform_keys { |key| key.underscore }
       theme[:palettes] = theme[:palettes].transform_values { |value| value.transform_keys { |key| key.to_i } }
       return theme
+    end
+
+    def perfect_color_scheme colors
+      color_palette = @context.eval "
+        perfectColorScheme(#{colors.to_json})
+      "
+      color_palette.with_indifferent_access
     end
   end
 end
