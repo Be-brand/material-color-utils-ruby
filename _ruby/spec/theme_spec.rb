@@ -4,7 +4,8 @@ require "active_support/core_ext/hash/indifferent_access"
 RSpec::Matchers.define :be_color_hex do
   match do |actual|
     color_hex_regex = /\A#\h{6}\h{2}?\z/
-    color_hex_regex.match? actual
+    color_hex_regex.match?(actual) and
+      actual.upcase == actual
   end
 end
 
@@ -35,15 +36,15 @@ RSpec.describe 'theme builder' do
 
   it 'can create theme given argb or hex colors' do
     argbColors = { primary: 6770852, secondary: 0 }
-    hexColors = { primary: '#6750a4', secondary: '#000000' }
+    hexColors = { primary: '#6750A4', secondary: '#000000' }
     themeFromArgb = material3.build(argbColors)
     themeFromHex = material3.build(hexColors)
     expect(themeFromArgb).to eq themeFromHex
   end
 
   it 'returns the same color scheme given 4 hex colors' do
-    hexColors = { primary: '#6750a4', secondary: '#958da5',
-      tertiary: '#b58392', neutral: '#939094'}
+    hexColors = { primary: '#6750A4', secondary: '#958DA5',
+      tertiary: '#B58392', neutral: '#939094'}
     color_scheme = material3.perfect_color_scheme(hexColors)
     expect(color_scheme).to eq hexColors.with_indifferent_access
   end
@@ -56,7 +57,7 @@ RSpec.describe 'theme builder' do
   end
 
   it 'returns the color scheme based on primary color' do
-    hexColors = { primary: '#6750a4' }
+    hexColors = { primary: '#6750A4' }
     hexColors.with_indifferent_access
     color_scheme = material3.perfect_color_scheme(hexColors)
     expect(color_scheme[:primary]).to eq hexColors[:primary]
@@ -64,7 +65,7 @@ RSpec.describe 'theme builder' do
   end
 
   it 'returns the color scheme based on primary and secondary colors' do
-    colors = { primary: '#6750a4', secondary: '#55a300' }
+    colors = { primary: '#6750A4', secondary: '#55A300' }
     colors.with_indifferent_access
     color_scheme = material3.perfect_color_scheme(colors)
     expect(color_scheme[:primary]).to eq colors[:primary]

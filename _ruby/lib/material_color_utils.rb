@@ -41,6 +41,10 @@ module ThemeBuilder
             return parseInt(hex.slice(1), 16)
           }
 
+          globalThis.convertArgbToHex = function (argb) {
+            return hexFromArgb(argb).toUpperCase()
+          }
+
           globalThis.convertColorsObjectValuesToArgb = function (colors) {
             return Object.entries(colors).reduce((acc, [name, value]) => ({ ...acc, [name]: isInt(value) ? value : convertHexToArgb(value) }), {})
           }
@@ -80,15 +84,15 @@ module ThemeBuilder
 
           globalThis.convertTonalPaletteToHex = function (tonal_palette) {
             tonal_numbers = [100, 99, 98, 95, 90, 80, 70, 60, 50, 40, 35, 30, 25, 20, 10, 0]
-            return tonal_numbers.reduce((acc, tonal_number) => ({...acc, [tonal_number]: hexFromArgb(tonal_palette.tone(tonal_number))}), {})
+            return tonal_numbers.reduce((acc, tonal_number) => ({...acc, [tonal_number]: convertArgbToHex(tonal_palette.tone(tonal_number))}), {})
           }
 
           globalThis.convertThemeColorsToHex = function (theme) {
             return {
-              source: hexFromArgb(theme.source),
+              source: convertArgbToHex(theme.source),
               schemes: {
-                light: Object.entries(theme.schemes.light.props).reduce((acc, [name, value]) => ({ ...acc, [name]: hexFromArgb(value) }), {}),
-                dark: Object.entries(theme.schemes.dark.props).reduce((acc, [name, value]) => ({ ...acc, [name]: hexFromArgb(value) }), {}),
+                light: Object.entries(theme.schemes.light.props).reduce((acc, [name, value]) => ({ ...acc, [name]: convertArgbToHex(value) }), {}),
+                dark: Object.entries(theme.schemes.dark.props).reduce((acc, [name, value]) => ({ ...acc, [name]: convertArgbToHex(value) }), {}),
               },
               palettes: Object.entries(theme.palettes).reduce((acc, [name, value]) => ({ ...acc, [name]: convertTonalPaletteToHex(value) }), {}),
             }
@@ -129,7 +133,7 @@ module ThemeBuilder
             })
             color_scheme = Object.entries(color_scheme)
               .reduce((acc, [name, value]) =>
-                ({ ...acc, [name]: hexFromArgb(value) }), {})
+                ({ ...acc, [name]: convertArgbToHex(value) }), {})
             return color_scheme
           }
         })()
